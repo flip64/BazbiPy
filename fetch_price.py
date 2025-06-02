@@ -1,19 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 
-def fetch_price(url):
+def get_price(url):
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
+
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print("خطا در دریافت صفحه")
+        return
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, "html.parser")
-        price_element = soup.select_one("p.price")
-
-        if price_element:
-            return price_element.get_text(strip=True)
-        else:
-            return "قیمت پیدا نشد."
+    soup = BeautifulSoup(response.text, "html.parser")
+    price_tag = soup.find("span", class_="woocommerce-Price-amount amount")
+    if price_tag:
+        price = price_tag.get_text(strip=True)
+        print(f"قیمت قهوه جوش ۳ کاپ استیل: {price}")
     else:
-        return f"خطا در دریافت صفحه. کد وضعیت: {response.status_code}"
+        print("قیمت یافت نشد.")
+
