@@ -1,0 +1,5 @@
+{
+  "platform": "python",
+  "app": "bazbipy",
+  "port": 5000
+}
