@@ -38,6 +38,7 @@ def check_price(data: URLInput):
         return {
             "status": "first_time",
             "message": "Price saved for the first time.",
+            "name" : nameproduct ,
             "price": current_price
         }
 
@@ -45,6 +46,7 @@ def check_price(data: URLInput):
         db[url] = current_price
         save_db(db)
         return {
+            "name"  : nameproduct , 
             "status": "changed",
             "message": "Price has changed.",
             "old_price": old_price,
@@ -54,5 +56,6 @@ def check_price(data: URLInput):
     return {
         "status": "unchanged",
         "message": "Price has not changed.",
+        "name" : nameproduct , 
         "price": current_price
     }
