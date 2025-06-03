@@ -1,0 +1,57 @@
+import psycopg2
+from datetime import datetime
+from fetch_price import fetch_product_name_price 
+
+# تنظیمات اتصال به دیتابیس لیارا
+DB_CONFIG = {
+    "host": "bazbiafo",       # مثل bazbia.liara.cloud
+    "port": 5432,
+    "dbname": "bazbiafo",
+    "user": "root",
+    "password": "tFqpGzJuxA7NHHAz6v6TjfqV"
+}
+
+def track_product_price(url: str):
+    """
+    بررسی تغییر قیمت محصول بر اساس URL
+    اگر محصول جدید باشد درج می‌شود، اگر قیمتش تغییر کرده باشد به‌روزرسانی می‌شود.
+    """
+    try:
+        # اتصال به دیتابیس
+        conn = psycopg2.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        # دریافت اطلاعات محصول از URL
+        name, price = fetch_product_name_price(url)
+        print(f"📦 محصول: {name}\n💰 قیمت فعلی: {price}")
+
+        # بررسی اینکه آیا این URL قبلاً ذخیره شده یا نه
+        cursor.execute("SELECT price FROM products WHERE url = %s", (url,))
+        result = cursor.fetchone()
+
+        if result:
+            old_price = result[0]
+            if old_price != price:
+                # قیمت تغییر کرده، بروزرسانی انجام شود
+                cursor.execute(
+                    "UPDATE products SET price = %s, name = %s, last_checked = %s WHERE url = %s",
+                    (price, name, datetime.now(), url)
+                )
+                print("🔄 قیمت تغییر کرده و بروزرسانی شد.")
+            else:
+                print("✅ قیمت تغییری نکرده.")
+        else:
+            # محصول جدید، درج در جدول
+            cursor.execute(
+                "INSERT INTO products (url, name, price, last_checked) VALUES (%s, %s, %s, %s)",
+                (url, name, price, datetime.now())
+            )
+            print("🆕 محصول جدید ذخیره شد.")
+
+        # ذخیره تغییرات و بستن اتصال
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    except Exception as e:
+        print(f"❌ خطا هنگام بررسی قیمت: {e}")
