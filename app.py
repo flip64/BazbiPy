@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from fetch_price import get_price
+from fetch_price import fetch_product_name_price
 import json
 import os
 
@@ -24,7 +24,7 @@ def save_db(data):
 @app.post("/check_price/")
 def check_price(data: URLInput):
     url = data.url.strip()
-    current_price = get_price(url)
+    nameproduct ,current_price  = fetch_product_name_price(url)
 
     if current_price is None:
         raise HTTPException(status_code=400, detail="Could not fetch price from URL.")
