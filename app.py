@@ -6,6 +6,11 @@ import os
 
 app = FastAPI()
 
+
+@app.get("/")
+def read_root():
+    return FileResponse(os.path.join("static", "index.html"))
+
 DB_FILE = "prices.json"
 
 class URLInput(BaseModel):
