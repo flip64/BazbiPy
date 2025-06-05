@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>بررسی قیمت محصولات</title>
   <style>
-    body {
+    body { 
       font-family: sans-serif;
       direction: rtl;
       padding: 2rem;
