@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>بررسی قیمت محصولات</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      direction: rtl;
+      padding: 2rem;
+      background: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 1rem;
+      font-family: monospace;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      background: #008cff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    table {
+      margin-top: 2rem;
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: right;
+    }
+    th {
+      background: #eee;
+    }
+  </style>
+</head>
+<body>
+
+<h1>بررسی قیمت محصولات</h1>
+
+<p>لینک‌های محصولات را وارد کنید (هر خط یک URL):</p>
+<textarea id="urlList"></textarea>
+<br>
+<button onclick="checkPrices()">بررسی قیمت‌ها</button>
+
+<table id="resultsTable" style="display: none;">
+  <thead>
+    <tr>
+      <th>لینک</th>
+      <th>نام محصول</th>
+      <th>قیمت</th>
+      <th>وضعیت</th>
+    </tr>
+  </thead>
+  <tbody id="resultsBody">
+  </tbody>
+</table>
+
+<script>
+  async function checkPrices() {
+    const urls = document.getElementById("urlList").value.trim().split("\n");
+    const tbody = document.getElementById("resultsBody");
+    tbody.innerHTML = "";
+    document.getElementById("resultsTable").style.display = "table";
+
+    for (const url of urls) {
+      if (!url.trim()) continue;
+
+      try {
+        const res = await fetch("https://web-production-e55b9.up.railway.app/check_price/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ url: url.trim() })
+        });
+
+        const statusText = res.ok ? "موفق" : `خطا: ${res.status}`;
+
+        if (!res.ok) throw new Error(statusText);
+
+        const data = await res.json();
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><a href="${url}" target="_blank">${url}</a></td>
+          <td>${data.title || "نامشخص"}</td>
+          <td>${data.price || "?"}</td>
+          <td>${data.status || "موفق"}</td>
+        `;
+        tbody.appendChild(row);
+      } catch (err) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><a href="${url}" target="_blank">${url}</a></td>
+          <td colspan="2" style="color: red;">خطا در دریافت اطلاعات</td>
+          <td style="color: red;">${err.message || "خطا"}</td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+  }
+</script>
+
+</body>
+</html>
